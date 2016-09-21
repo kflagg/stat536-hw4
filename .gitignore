@@ -1,0 +1,7 @@
+*.aux
+*.gz
+*.log
+*.tex
+*.Rproj
+.Rproj.user
+figure
