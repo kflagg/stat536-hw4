@@ -53,7 +53,7 @@ MLOts <- ts(MLO_flaskR$value, start = c(1977, 1), freq = 12)
 plot(MLOts)
 @
 
-{\it In this homework, your group will choose a different site and download the data set. There are 96 different locations to choose from at \verb|http://www.esrl.noaa.gov/gmd/dv/data/index.php?parameter_name=Carbon%2BDioxide&frequency=Monthly%2BAverages|. Click the trash can with a green arrow to access a text file that contains the data set. I found it easiest to just copy the rows with data and headers into Excel and use ``Data -> Text to columns'' to create a more useful csv file. But the conversion details are up to you. Make sure your site has records for at least 6 years.}
+{\it In this homework, your group will choose a different site and download the data set. There are 96 different locations to choose from at \url{http://www.esrl.noaa.gov/gmd/dv/data/index.php?parameter_name=Carbon%2BDioxide&frequency=Monthly%2BAverages}. Click the trash can with a green arrow to access a text file that contains the data set. I found it easiest to just copy the rows with data and headers into Excel and use ``Data -> Text to columns'' to create a more useful csv file. But the conversion details are up to you. Make sure your site has records for at least 6 years.}
 
 {\it Report all R code either inline or in an appendix.}
 
@@ -61,6 +61,15 @@ plot(MLOts)
 
 \item%1
 {\it Provide a reason for your choice of location. Report any missing observations and the range of years where you are modeling.}
+
+
+
+<<prob1>>=
+x <- read.csv("mex.csv", as.is = TRUE)
+
+
+
+@
 
 \item%2
 {\it Make a nice looking time series plot of the CO$_2$ concentrations.}
