@@ -106,6 +106,9 @@ former method is used.  During each sampling event, a pair of flasks
 is filled."
 
 <<prob1, include = FALSE>>=
+require(car)
+require(xtable)
+
 x <- read.csv("mex.csv", as.is = TRUE)
 colnames(x) <- c("year", "month", "value")
 tail(x)#years spanning 2009-2016
@@ -151,8 +154,29 @@ plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals")
 \item%4
 {\it Provide tests for the linear and seasonal means components, conditional on each other. Report those results in two sentences including all details.}
 
+<<prob4, results = 'asis'>>=
+#Make sure this means type II SS.
+aov_x <- Anova(lm_x, type = "II")
+#str(aov_x)
+
+cat("$H_{o}: \\beta_{year} = 0$", "$H_{A}: \\beta_{year} \\neq 0$", "\\n", "An F statistic of", aov_x$`F value`[1], "compared to an F distribution on", aov_x$Df[1], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[1], "which provides strong evidence that after accounting for month, year is linearly associated with mean CO2 measurement.")
+
+cat("$H_{o}: all \\beta_{month_{i}} = 0$", "$H_{A}:$", "at least 1", "$\\beta_{month_{i}} \\neq 0$", "\\n", "An F statistic of", aov_x$`F value`[2], "compared to an F distribution on", aov_x$Df[2], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[2], "which provides strong evidence that after accounting for linear yearly trends, month is associated with mean CO2 measurement.")
+
+
+
+@
+
 \item%5
 {\it For your model, plot the original time series and the model fitted values, both versus time on the same plot. You might consider two line types or colors for the two lines. The easiest way to obtain fitted values in R is using \texttt{fitted(modelname)}. Discuss how it appears your model does or does not describe the responses using this plot.}
+
+The line is the original time series plot, and the fitted values are the points. The model almost perfectly describes the obseved CO2 concentrations because all the points lie almost exactly on the time series line.
+
+<<prob5, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+par(mfrow = c(1,1))
+plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value")
+points(lm_x$fitted.values)
+@
 
 \item%6
 {\it Document your R version}
@@ -180,23 +204,23 @@ Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell,
 \begin{enumerate}
 
 \item%1
-<<one1, eval = FALSE, echo = TRUE>>=
+<<prob1, eval = FALSE, echo = TRUE>>=
 @
 
 \item%2
-<<two1, eval = FALSE, echo = TRUE>>=
+<<prob2, eval = FALSE, echo = TRUE>>=
 @
 
 \item%3
-<<three1, eval = FALSE, echo = TRUE>>=
+<<prob3, eval = FALSE, echo = TRUE>>=
 @
 
 \item%4
-<<four1, eval = FALSE, echo = TRUE>>=
+<<prob4, eval = FALSE, echo = TRUE>>=
 @
 
 \item%5
-<<five1, eval = FALSE, echo = TRUE>>=
+<<prob5, eval = FALSE, echo = TRUE>>=
 @
 
 \item%6
