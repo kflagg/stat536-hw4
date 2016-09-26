@@ -62,20 +62,91 @@ plot(MLOts)
 \item%1
 {\it Provide a reason for your choice of location. Report any missing observations and the range of years where you are modeling.}
 
+Kenny and I chose to use the High Altitude Global Climate Observation Center, Mexico (MEX) dataset because we thought the High Altitude aspect may show interesting features of $CO_{2}$ concentrations not available in other datasets.
 
+The information page on these data indicates measured responses are on the $X2007$ CO2 mole fraction scale. The excerpt from the information page gives insightful information about CO2 and the data:
 
-<<prob1>>=
+``Carbon dioxide (CO2) in ambient and standard air samples is
+detected using a non-dispersive infrared (NDIR) analyzer.
+The measurement of CO2 in air is made relative to standards 
+whose CO2 mole fraction is determined with high precision and 
+accuracy. Because detector response is non-linear in the range
+of atmospheric levels, ambient samples are bracketed during 
+analysis by a set of reference standards used to calibrate 
+detector response. Measurements are reported in units of 
+micromol/mol ($10^{-6}$ mol CO2 per mol of dry air or parts per 
+million (ppm)). Measurements are directly traceable to the 
+WMO CO2 mole fraction scale.
+
+Uncertainty in the measurements of CO2 from discrete samples 
+has not yet been fully evaluated.  Key components of it are our
+ability to propagate the WMO $XCO2$ scale to working standards, 
+the repeatability of the analyzers used for sample measurement, 
+and agreement between pairs of samples collected simultaneously.
+Zhao and Tans (2006) determined that the internal consistency
+of working standards is +/- 0.02 ppm (68\% confidence interval).
+The typical repeatability of the analyzers, based on repeated 
+measurements of natural air from a cylinder, is +/- 0.03 ppm.
+Average pair agreement across the entire sampling network is
++/- 0.1 ppm.
+
+The Pacific Ocean Cruise (POC, travelling between the US west coast
+and New Zealand or Australia) data have been merged and grouped into 
+5 degree latitude bins.  For the South China Sea cruises (SCS) the 
+data are grouped in 3 degree latitude bins.
+
+Sampling intervals are approximately weekly for the fixed sites
+and average one sample every 3 weeks per latitude zone for POC and
+about one sample every week per latitude for SCS.
+
+Historically, samples have been collected using two general methods:
+flushing and then pressurizing glass flasks with a pump, or opening a
+stopcock on an evacuated glass flask; since 28 April 2003, only the
+former method is used.  During each sampling event, a pair of flasks 
+is filled."
+
+<<prob1, include = FALSE>>=
 x <- read.csv("mex.csv", as.is = TRUE)
-
-
-
+colnames(x) <- c("year", "month", "value")
+tail(x)#years spanning 2009-2016
 @
 
 \item%2
 {\it Make a nice looking time series plot of the CO$_2$ concentrations.}
 
+<<prob2, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+ts_x <- ts(x)
+plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value")
+@
+
 \item%3
 {\it Fit a linear trend plus seasonal means model to the data. Report and discuss the four panel residual diagnostics. Also make a plot of residuals vs time and discuss any potential missed pattern versus time.}
+
+{\bf Residuals vs. Fitted}: The residuals vs. fitted plot shows a slight inverse quadratic trend, less variation in the residuals for extreme fitted CO2 concentrations, and a few outliers.
+
+{\bf Normal QQ}: The standardized residuals fall on the Normal QQ line almost perfectly, making normality of the residuals a reasonable assumption.
+
+{\bf Scale-Location}:
+
+{\bf Residuals vs. Leverage}:
+
+{\bf Residuals vs. Time}: There is slightly more variation in the the residuals associated with years 2012 and 2015.
+
+
+<<prob3, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+lm_x <- lm(value ~ year + as.factor(month), data = x)
+par(mfrow = c(2,2))
+plot(lm_x)
+
+#Does he want fractional year?
+@
+
+<<prob3x, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+#create fractional year variable
+par(mfrow=c(1,1))
+
+plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals")
+@
 
 \item%4
 {\it Provide tests for the linear and seasonal means components, conditional on each other. Report those results in two sentences including all details.}
@@ -93,6 +164,13 @@ getRversion()
 \end{enumerate}
 
 \pagebreak
+\section*{Reference}
+Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell, 
+   M.J. Crotwell, and K.W. Thoning (2016), Atmospheric Carbon Dioxide
+   Dry Air Mole Fractions from the NOAA ESRL Carbon Cycle
+   Cooperative Global Air Sampling Network, 1968-2015, Version: 2016-08-30,
+   Path: \url{ftp://aftp.cmdl.noaa.gov/data/trace_gases/co2/flask/surface/}.
+
 \appendix
 \section*{R Code}
 
