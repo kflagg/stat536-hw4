@@ -1,6 +1,7 @@
 *.aux
 *.gz
 *.log
+*.out
 *.tex
 *.Rproj
 .Rproj.user

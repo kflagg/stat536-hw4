@@ -1,23 +1,19 @@
 \documentclass[11pt]{article}
-\usepackage{fullpage}
-\usepackage{graphicx}
-\usepackage{float}
-\usepackage{amsmath}
-\usepackage{enumitem}
+\usepackage{fullpage,graphicx,float,amsmath,enumitem,hyperref}
 \setlist{parsep=5.5pt}
 \setlength{\parindent}{0pt}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \lhead{Time Series HW 4}
-\chead{September 2, 2016}
+\chead{October 3, 2016}
 \rhead{Andrea Mack and Kenny Flagg}
 \setlength{\headheight}{18pt}
 \setlength{\headsep}{2pt}
 
 \title{Time Series HW 4}
 \author{Andrea Mack and Kenny Flagg}
-\date{September 2, 2016}
+\date{October 3, 2016}
 
 \begin{document}
 \maketitle
@@ -159,9 +155,9 @@ plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals")
 aov_x <- Anova(lm_x, type = "II")
 #str(aov_x)
 
-cat("$H_{o}: \\beta_{year} = 0$", "$H_{A}: \\beta_{year} \\neq 0$", "\\n", "An F statistic of", aov_x$`F value`[1], "compared to an F distribution on", aov_x$Df[1], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[1], "which provides strong evidence that after accounting for month, year is linearly associated with mean CO2 measurement.")
+cat("$H_{o}: \\beta_{year} = 0$", "$H_{A}: \\beta_{year} \\neq 0$", "\n", "An F statistic of", aov_x$`F value`[1], "compared to an F distribution on", aov_x$Df[1], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[1], "which provides strong evidence that after accounting for month, year is linearly associated with mean CO2 measurement.")
 
-cat("$H_{o}: all \\beta_{month_{i}} = 0$", "$H_{A}:$", "at least 1", "$\\beta_{month_{i}} \\neq 0$", "\\n", "An F statistic of", aov_x$`F value`[2], "compared to an F distribution on", aov_x$Df[2], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[2], "which provides strong evidence that after accounting for linear yearly trends, month is associated with mean CO2 measurement.")
+cat("$H_{o}: all \\beta_{month_{i}} = 0$", "$H_{A}:$", "at least 1", "$\\beta_{month_{i}} \\neq 0$", "\n", "An F statistic of", aov_x$`F value`[2], "compared to an F distribution on", aov_x$Df[2], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[2], "which provides strong evidence that after accounting for linear yearly trends, month is associated with mean CO2 measurement.")
 
 
 
@@ -170,12 +166,15 @@ cat("$H_{o}: all \\beta_{month_{i}} = 0$", "$H_{A}:$", "at least 1", "$\\beta_{m
 \item%5
 {\it For your model, plot the original time series and the model fitted values, both versus time on the same plot. You might consider two line types or colors for the two lines. The easiest way to obtain fitted values in R is using \texttt{fitted(modelname)}. Discuss how it appears your model does or does not describe the responses using this plot.}
 
-The line is the original time series plot, and the fitted values are the points. The model almost perfectly describes the obseved CO2 concentrations because all the points lie almost exactly on the time series line.
+The dashed line is the original time series plot, and the fitted values are the solid line. The model almost perfectly describes the obseved CO2 concentrations because all the points lie almost exactly on the time series line.
 
 <<prob5, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+# I think it's visually misleading to compare points to lines.
+# I made a solid line for the model so we can see the obvious seasonal
+# variation around the linear trend. It does fit the data astoundingly well.
 par(mfrow = c(1,1))
-plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value")
-points(lm_x$fitted.values)
+plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value", lty = 2)
+lines(lm_x$fitted.values, lty = 1)
 @
 
 \item%6
