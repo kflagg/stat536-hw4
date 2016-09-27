@@ -131,11 +131,11 @@ The plots appear on the next page.
 
 {\bf Normal Q-Q}: The standardized residuals fall on the Normal Q-Q line almost perfectly, making normality of the residuals a reasonable assumption.
 
-{\bf Scale-Location}: Smaller fitted values appear to be associated with slightly more variability than larger fitted values, but this is mainly due to three possible outliers, and the problem does not look serious.
+{\bf Scale-Location}: Average fitted values appear to be associated with slightly more variability than edge fitted values, but this is mainly due to the slight quadratic pattern, and the problem does not look serious.
 
-{\bf Residuals vs. Leverage}: The observations all have about the same leverage, so so single point has a disproportional influence on the model coefficient estimates.
+{\bf Residuals vs. Leverage}: The observations all have about the same leverage, so no single point has a disproportional influence on its own fitted value.
 
-{\bf Residuals vs. Time}: There is slightly more variation in the the residuals associated with years 2012 and 2015. The years 2011 and 2012 have some large-magnitude negative residuals while the residuals for other years tend to be positive, so the linear term for year may be inadequate.
+{\bf Residuals vs. Time}: There is slightly more variation in the the residuals associated with years 2012 and 2015. The years 2011 and 2012 have some large-magnitude negative residuals while the residuals for other years tend to be positive, so the linear term for year may be inadequate and a sinusoidal pattern may more appropriately model the cyclic trend in the residuals.
 
 <<prob3, fig.height = 5>>=
 lm_x <- lm(value ~ year + as.factor(month), data = x)
@@ -146,11 +146,6 @@ plot(lm_x, add.smooth = FALSE)
 @
 
 <<prob3x>>=
-# Helpful?
-plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals",
-     main = "Residuals vs Time")
-
-# Not helpful?
 plot(lm_x$residuals ~ as.numeric(time(ts_x)), xlab = "Year", ylab = "Residuals",
      main = "Residuals vs Time")
 @
@@ -188,7 +183,10 @@ cat("$$H_{0}: \\text{all } \\beta_{month_{i}} = 0\\text{ vs }H_{A}:",
 \item%5
 {\it For your model, plot the original time series and the model fitted values, both versus time on the same plot. You might consider two line types or colors for the two lines. The easiest way to obtain fitted values in R is using \texttt{fitted(modelname)}. Discuss how it appears your model does or does not describe the responses using this plot.}
 
-The dashed line is the original time series, and the solid line shows the fitted values. The model almost perfectly describes the obseved $CO_2$ concentrations because the lines almost perfectly coincide. It seems believable that the mountaintop station would be isolated from effects of human activities or other influences that could cause spatially local fluxuations in $CO_2$, so we could be observing seasonal patterns and a longer-term trend, with very little noise getting in the way.
+The dashed line is the original time series, and the solid line shows the fitted values. The model almost perfectly describes the obseved $CO_2$ concentrations because the lines almost perfectly coincide. But in the center of the plot troughs are lower than the fitted values, which may be a result of the slightly quadratic relationship we saw in the residuals vs. fitted plot that we are not accounting for in the model.
+
+
+It seems believable that the mountaintop station would be isolated from effects of human activities or other influences that could cause spatially local fluxuations in $CO_2$, so we could be observing seasonal patterns and a longer-term trend, with very little unexplained noise getting in the way.
 
 <<prob5, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
 plot.ts(ts_x[,"value"], xlab = "Year", ylab = expression(CO[2]*" Value"), lty = 2,
