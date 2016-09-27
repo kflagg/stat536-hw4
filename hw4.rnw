@@ -6,28 +6,30 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \lhead{Time Series HW 4}
-\chead{October 3, 2016}
+\chead{September 28, 2016}
 \rhead{Andrea Mack and Kenny Flagg}
 \setlength{\headheight}{18pt}
 \setlength{\headsep}{2pt}
 
 \title{Time Series HW 4}
 \author{Andrea Mack and Kenny Flagg}
-\date{October 3, 2016}
+\date{September 28, 2016}
 
 \begin{document}
 \maketitle
 
 <<setup, echo = FALSE, message = FALSE, cache = FALSE>>=
-require(knitr)
-opts_chunk$set(echo = FALSE, comment = NA, fig.align = 'center',
-               fig.width = 6.5, fig.height = 3, fig.pos = 'H',
-               size = 'footnotesize', dev = 'pdf',
+library(knitr)
+opts_chunk$set(echo = FALSE, comment = NA, fig.align = "center",
+               fig.width = 6.5, fig.height = 4, fig.pos = "H",
+               size = "footnotesize", dev = "pdf",
                dev.args = list(pointsize = 11))
-knit_theme$set('print')
+knit_theme$set("print")
 
-require(xtable)
-options(xtable.table.placement = 'H', width = 80, show.signif.stars = FALSE)
+library(car)
+library(xtable)
+options(xtable.table.placement = "H", width = 80, scipen = 1,
+        show.signif.stars = FALSE)
 @
 
 {\it Due on Wednesday, Sept 28 at noon at my office.}
@@ -38,7 +40,7 @@ options(xtable.table.placement = 'H', width = 80, show.signif.stars = FALSE)
 
 {\it For Mauna Loa, my data set looks like following and I subset it to only pertain to results after 1977 where there were no missing values. You can choose to keep years with missing values or cut those years from your analysis somewhat like I did.}
 
-<<zero1, warning = FALSE>>=
+<<mark, warning = FALSE, eval = FALSE, echo = TRUE>>=
 MLO_flask <- read.csv('https://dl.dropboxusercontent.com/u/77307195/MLO_flask.csv', header = TRUE)
 table(MLO_flask$year) # Great way to see how many observations you have per year
 MLO_flaskR <- subset(MLO_flask, year > 1976)
@@ -49,7 +51,7 @@ MLOts <- ts(MLO_flaskR$value, start = c(1977, 1), freq = 12)
 plot(MLOts)
 @
 
-{\it In this homework, your group will choose a different site and download the data set. There are 96 different locations to choose from at \url{http://www.esrl.noaa.gov/gmd/dv/data/index.php?parameter_name=Carbon%2BDioxide&frequency=Monthly%2BAverages}. Click the trash can with a green arrow to access a text file that contains the data set. I found it easiest to just copy the rows with data and headers into Excel and use ``Data -> Text to columns'' to create a more useful csv file. But the conversion details are up to you. Make sure your site has records for at least 6 years.}
+{\it In this homework, your group will choose a different site and download the data set. There are 96 different locations to choose from at \url{http://www.esrl.noaa.gov/gmd/dv/data/index.php?parameter_name=Carbon%2BDioxide&frequency=Monthly%2BAverages}. Click the trash can {\bf(Kenny thinks it's an old-timey cylindrical hard drive)} with a green arrow to access a text file that contains the data set. I found it easiest to just copy the rows with data and headers into Excel and use ``Data $\rightarrow$ Text to columns'' to create a more useful csv file. But the conversion details are up to you. Make sure your site has records for at least 6 years.}
 
 {\it Report all R code either inline or in an appendix.}
 
@@ -58,11 +60,12 @@ plot(MLOts)
 \item%1
 {\it Provide a reason for your choice of location. Report any missing observations and the range of years where you are modeling.}
 
-Kenny and I chose to use the High Altitude Global Climate Observation Center, Mexico (MEX) dataset because we thought the High Altitude aspect may show interesting features of $CO_{2}$ concentrations not available in other datasets.
+Kenny and Andrea chose to use the High Altitude Global Climate Observation Center, Mexico (MEX) dataset because we thought the High Altitude aspect may show interesting features of $CO_{2}$ concentrations not available in other datasets. The site is located at the coordinates 18.984, -97.311 near the summit of a 15,000 ft mountain.
 
-The information page on these data indicates measured responses are on the $X2007$ CO2 mole fraction scale. The excerpt from the information page gives insightful information about CO2 and the data:
+The information page on these data indicates measured responses are on the $X2007$ $CO_2$ mole fraction scale. The excerpt from the information page gives insightful information about $CO_2$ and the data:
 
-``Carbon dioxide (CO2) in ambient and standard air samples is
+\begin{quote}
+Carbon dioxide (CO2) in ambient and standard air samples is
 detected using a non-dispersive infrared (NDIR) analyzer.
 The measurement of CO2 in air is made relative to standards 
 whose CO2 mole fraction is determined with high precision and 
@@ -99,94 +102,110 @@ Historically, samples have been collected using two general methods:
 flushing and then pressurizing glass flasks with a pump, or opening a
 stopcock on an evacuated glass flask; since 28 April 2003, only the
 former method is used.  During each sampling event, a pair of flasks 
-is filled."
+is filled.
+\end{quote}
 
 <<prob1, include = FALSE>>=
-require(car)
-require(xtable)
-
 x <- read.csv("mex.csv", as.is = TRUE)
 colnames(x) <- c("year", "month", "value")
-tail(x)#years spanning 2009-2016
+tail(x) #years spanning 2009-2015
+table(x[,c("year", "month")]) #7 years, 12 obs in each
 @
 
+\pagebreak
 \item%2
 {\it Make a nice looking time series plot of the CO$_2$ concentrations.}
 
-<<prob2, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
-ts_x <- ts(x)
-plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value")
+<<prob2>>=
+ts_x <- ts(x, start = min(x$year), frequency = length(unique(x$month)))
+plot.ts(ts_x[,"value"], xlab = "Year", ylab = expression(CO[2]*" Value"),
+        main = expression(bold("Observed CO"[2]*" Over Time at MEX")))
 @
 
 \item%3
 {\it Fit a linear trend plus seasonal means model to the data. Report and discuss the four panel residual diagnostics. Also make a plot of residuals vs time and discuss any potential missed pattern versus time.}
 
-{\bf Residuals vs. Fitted}: The residuals vs. fitted plot shows a slight inverse quadratic trend, less variation in the residuals for extreme fitted CO2 concentrations, and a few outliers.
+The plots appear on the next page.
 
-{\bf Normal QQ}: The standardized residuals fall on the Normal QQ line almost perfectly, making normality of the residuals a reasonable assumption.
+{\bf Residuals vs. Fitted}: The residuals vs. fitted plot shows a slight inverse quadratic trend, less variation in the residuals for extreme fitted $CO_2$ concentrations, and a few outliers. The largest and smallest observations do not seem to be well-described by the model.
 
-{\bf Scale-Location}:
+{\bf Normal Q-Q}: The standardized residuals fall on the Normal Q-Q line almost perfectly, making normality of the residuals a reasonable assumption.
 
-{\bf Residuals vs. Leverage}:
+{\bf Scale-Location}: Smaller fitted values appear to be associated with slightly more variability than larger fitted values, but this is mainly due to three possible outliers, and the problem does not look serious.
 
-{\bf Residuals vs. Time}: There is slightly more variation in the the residuals associated with years 2012 and 2015.
+{\bf Residuals vs. Leverage}: The observations all have about the same leverage, so so single point has a disproportional influence on the model coefficient estimates.
 
+{\bf Residuals vs. Time}: There is slightly more variation in the the residuals associated with years 2012 and 2015. The years 2011 and 2012 have some large-magnitude negative residuals while the residuals for other years tend to be positive, so the linear term for year may be inadequate.
 
-<<prob3, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
+<<prob3, fig.height = 5>>=
 lm_x <- lm(value ~ year + as.factor(month), data = x)
-par(mfrow = c(2,2))
-plot(lm_x)
 
-#Does he want fractional year?
+par(mfrow = c(2, 2), cex = 1, mar = c(4.1, 4.1, 2.1, 2.1))
+plot(lm_x, add.smooth = FALSE)
+# Chris says always use add.smooth = FALSE!
 @
 
-<<prob3x, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
-#create fractional year variable
-par(mfrow=c(1,1))
+<<prob3x>>=
+# Helpful?
+plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals",
+     main = "Residuals vs Time")
 
-plot(lm_x$residuals ~ x$year, xlab = "Year", ylab = "Residuals")
+# Not helpful?
+plot(lm_x$residuals ~ as.numeric(time(ts_x)), xlab = "Year", ylab = "Residuals",
+     main = "Residuals vs Time")
 @
 
 \item%4
 {\it Provide tests for the linear and seasonal means components, conditional on each other. Report those results in two sentences including all details.}
 
+The table below shows Type II sums of squares computed by the \texttt{Anova} function.
+
 <<prob4, results = 'asis'>>=
-#Make sure this means type II SS.
+# Type II SS for main effects account for other main effects but not interactions.
+# Note that we've got balanced data so all the types are equivalent.
 aov_x <- Anova(lm_x, type = "II")
-#str(aov_x)
+xtable(cbind(aov_x[,1:3],
+             `Pr(>F)` = format.pval(aov_x$`Pr(>F)`,
+                                    eps = 0.0001, na.form = "")),
+       align = "rrrrr", digits = c(0, 2, 0, 2, 4))
 
-cat("$H_{o}: \\beta_{year} = 0$", "$H_{A}: \\beta_{year} \\neq 0$", "\n", "An F statistic of", aov_x$`F value`[1], "compared to an F distribution on", aov_x$Df[1], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[1], "which provides strong evidence that after accounting for month, year is linearly associated with mean CO2 measurement.")
+cat("$$H_{0}: \\beta_{year} = 0\\text{ vs }H_{A}: \\beta_{year} \\neq 0$$",
+    "An F statistic of", aov_x$`F value`[1], "compared to an F distribution on",
+    aov_x$Df[1], "and", aov_x$Df[3], "degrees of freedom led to a p-value of $",
+    format.pval(aov_x$`Pr(>F)`[1], eps = 0.0001),
+    "$ which provides strong evidence that after accounting for month, year is",
+    "linearly associated with mean $CO_2$ measurement.")
 
-cat("$H_{o}: all \\beta_{month_{i}} = 0$", "$H_{A}:$", "at least 1", "$\\beta_{month_{i}} \\neq 0$", "\n", "An F statistic of", aov_x$`F value`[2], "compared to an F distribution on", aov_x$Df[2], "and", aov_x$Df[3], "degrees of freedom let to a pvalue of", aov_x$`Pr(>F)`[2], "which provides strong evidence that after accounting for linear yearly trends, month is associated with mean CO2 measurement.")
-
-
-
+cat("$$H_{0}: \\text{all } \\beta_{month_{i}} = 0\\text{ vs }H_{A}:",
+    "\\text{at least one } \\beta_{month_{i}} \\neq 0$$",
+    "An F statistic of", aov_x$`F value`[2], "compared to an F distribution on",
+    aov_x$Df[2], "and", aov_x$Df[3], "degrees of freedom led to a p-value of $",
+    format.pval(aov_x$`Pr(>F)`[2], eps = 0.0001),
+    "$ which provides strong evidence that after accounting for linear",
+    "yearly trends, month is associated with mean $CO_2$ measurement.")
 @
 
 \item%5
 {\it For your model, plot the original time series and the model fitted values, both versus time on the same plot. You might consider two line types or colors for the two lines. The easiest way to obtain fitted values in R is using \texttt{fitted(modelname)}. Discuss how it appears your model does or does not describe the responses using this plot.}
 
-The dashed line is the original time series plot, and the fitted values are the solid line. The model almost perfectly describes the obseved CO2 concentrations because all the points lie almost exactly on the time series line.
+The dashed line is the original time series, and the solid line shows the fitted values. The model almost perfectly describes the obseved $CO_2$ concentrations because the lines almost perfectly coincide. It seems believable that the mountaintop station would be isolated from effects of human activities or other influences that could cause spatially local fluxuations in $CO_2$, so we could be observing seasonal patterns and a longer-term trend, with very little noise getting in the way.
 
 <<prob5, fig.height = 4, fig.width = 6, fig.align = 'center'>>=
-# I think it's visually misleading to compare points to lines.
-# I made a solid line for the model so we can see the obvious seasonal
-# variation around the linear trend. It does fit the data astoundingly well.
-par(mfrow = c(1,1))
-plot.ts(ts_x[,3], xlab = "Time Series Index", ylab = "[CO2] Value", lty = 2)
-lines(lm_x$fitted.values, lty = 1)
+plot.ts(ts_x[,"value"], xlab = "Year", ylab = expression(CO[2]*" Value"), lty = 2,
+        main = expression(bold("Observed and Fitted CO"[2]*" Over Time")))
+lines(as.numeric(time(ts_x)), lm_x$fitted.values, lty = 1)
+legend("bottomright", legend = c("Observed", "Fitted"), lty = c(2, 1))
 @
 
 \item%6
 {\it Document your R version}
 
-<<six1, echo = TRUE>>=
+<<prob6, echo = TRUE>>=
 getRversion()
 @
 
 \end{enumerate}
 
-\pagebreak
 \section*{Reference}
 Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell, 
    M.J. Crotwell, and K.W. Thoning (2016), Atmospheric Carbon Dioxide
@@ -196,9 +215,6 @@ Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell,
 
 \appendix
 \section*{R Code}
-
-<<zero1, eval = FALSE>>=
-@
 
 \begin{enumerate}
 
@@ -213,6 +229,8 @@ Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell,
 \item%3
 <<prob3, eval = FALSE, echo = TRUE>>=
 @
+<<prob3x, eval = FALSE, echo = TRUE>>=
+@
 
 \item%4
 <<prob4, eval = FALSE, echo = TRUE>>=
@@ -223,7 +241,7 @@ Dlugokencky, E.J., P.M. Lang, J.W. Mund, A.M. Crotwell,
 @
 
 \item%6
-<<six1, eval = FALSE, echo = TRUE>>=
+<<prob6, eval = FALSE, echo = TRUE>>=
 @
 
 \end{enumerate}
